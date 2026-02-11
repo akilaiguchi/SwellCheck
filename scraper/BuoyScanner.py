@@ -1,5 +1,13 @@
 import requests
 
+# TODO: this only changes time, doesn't move back date for pst. fix the code here later
+def calculate_pst(utc: int) -> int:
+    if utc < 8:
+        return utc + 16
+    else:
+        return utc - 8
+
+
 class BuoyScanner:
 
     # Initialize specific buoy
@@ -41,7 +49,7 @@ class BuoyScanner:
             Latest wave information for buoy {self.buoy_id}:
             Date: {self.data[0]['MM']}/{self.data[0]['DD']}/{self.data[0]['#YY']}
             Time (UTC): {self.data[0]['hh']}:{self.data[0]['mm']}
-            Time (PST): {int(self.data[0]['hh']) - 8}:{self.data[0]['mm']}
+            Time (PST): {calculate_pst(int(self.data[0]['hh']))}:{self.data[0]['mm']}
 
 
             Wave Height: {self.data[0]['WVHT']} m

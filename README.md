@@ -1,53 +1,56 @@
-# 🏄‍♂️ OpenSwell: Event-Driven Ocean Data Platform
+# 🗺 Project Roadmap: OpenSwell Implementation Phases
 
-A distributed, highly-scalable backend system designed to ingest, process, and alert users based on real-time buoy data from the National Data Buoy Center (NDBC).
-
-[Image of microservices architecture showing ingestion, kafka, and data storage layers]
-
-## 🏗 System Architecture
-This project transitions a simple scraping script into a production-grade microservices architecture to demonstrate modern backend engineering principles.
-
-- **Ingestion Service (Python/Docker):** Polling service that fetches raw spectral buoy data and publishes events to Kafka.
-- **Message Broker (Apache Kafka):** Decouples data ingestion from processing, ensuring system resiliency and backpressure management.
-- **Data Processor (Go/Python):** Consumes raw streams, calculates significant wave height trends, and persists data.
-- **Storage Layer (PostgreSQL + TimescaleDB):** Optimized for time-series swell data.
-- **Caching Layer (Redis):** Stores "latest-read" states to provide sub-millisecond API responses.
-- **API Gateway (GraphQL):** Unified interface for querying historical trends and station metadata.
-- **Notification Engine:** Event-driven worker that triggers SMS/Push alerts via Twilio when specific "Swell Events" are detected.
+This document outlines the step-by-step evolution of the OpenSwell platform. Each phase is designed to build upon the last, moving from a monolithic script to a resilient, task-based microservices architecture optimized for performance and observability.
 
 ---
 
-## 🛠 Tech Stack
-* **Language:** Python 3.x (Ingestion), Go (Processing - Optional/Planned)
-* **Infrastructure:** Docker, Kubernetes (K8s), Terraform
-* **Data:** PostgreSQL, Redis, Apache Kafka
-* **API:** GraphQL (Apollo/Graphene)
-* **CI/CD:** GitHub Actions
-* **Monitoring:** Prometheus & Grafana
+## 🟢 Phase 1: The MVP (Minimum Viable Product)
+**Goal:** Successfully scrape one buoy and send a daily text message.
+- [ ] **Data Research:** Identify the NDBC Station ID for your local break (e.g., 46221 for Santa Monica Bay).
+- [ ] **BuoyScanner class:** Scan desired NDBC Station ID for latest information using `requests`.
+- [ ] **Messaging Integration:** Connect Telegram bot api to send buoy information to messaging app.
+- [ ] **Local Automation:** Set up a `cron` job to trigger the script once daily.
 
 ---
 
-## 🚀 Scalability Features (The "Why")
-- **Event-Driven:** Using Kafka allows the system to handle bursts of data from hundreds of buoys without crashing the database.
-- **Containerization:** Entire stack is Dockerized for environment parity between development and my MacBook-based home server.
-- **Orchestration:** K8s manifests include Horizontal Pod Autoscalers (HPA) to simulate handling high-traffic swell events.
-- **Infrastructure as Code:** Terraform configurations included for automated deployment to AWS (EKS/RDS).
+## 🟡 Phase 2: Persistence & Containerization
+**Goal:** Move from "volatile" data to a permanent database and standard environment.
+- [ ] **Database Setup:** Create a **PostgreSQL** instance via Docker Compose.
+- [ ] **Schema Design:** Create tables for `buoy_stations` and `swell_readings` using `TIMESTAMPTZ` for time-series accuracy.
+- [ ] **Dockerization:** Wrap the Python scraper in a `Dockerfile`.
+- [ ] **Volume Mapping:** Ensure database data persists on your MacBook Air even if the container restarts.
 
 ---
 
-## 📦 Local Setup & Deployment
+## 🟠 Phase 3: The "Resilient" Pivot (Task Queues)
+**Goal:** Decouple the "fetching" from the "saving" using Redis and Celery to ensure no data is lost.
+- [ ] **Broker Setup:** Add **Redis** to your `docker-compose.yml` to act as the message broker.
+- [ ] **Asynchronous Workers:** Implement **Celery** to handle background tasks.
+    - **Producer:** Scraper fetches data and dispatches a task to Redis.
+    - **Worker:** A separate process that picks up the task and writes the data to PostgreSQL.
+- [ ] **Resiliency Test:** Shut down the Worker, trigger a scrape, and verify that the task waits in Redis until the worker is back online.
 
-### Prerequisites
-- Docker & Docker Desktop
-- Tailscale (for remote access to the MacBook Air node)
+---
 
-### Running the Stack
-```bash
-# Clone the repository
-git clone [https://github.com/yourusername/openswell.git](https://github.com/yourusername/openswell.git)
+## 🔴 Phase 4: API & Speed (FastAPI & Caching)
+**Goal:** Make the data accessible via a modern API and optimize performance.
+- [ ] **FastAPI Server:** Build an API to query swell history and the latest buoy readings.
+- [ ] **Redis Caching:** Implement a "Cache-Aside" pattern. When a user asks for the latest data, the API checks Redis first before hitting PostgreSQL.
+- [ ] **Pydantic Models:** Use Pydantic for strict data validation and auto-generated OpenAPI (Swagger) documentation.
 
-# Spin up the infrastructure (Postgres, Kafka, Redis)
-docker-compose up -d
+---
 
-# Check service logs
-docker logs -f ingestion-service
+## 🔵 Phase 5: DevOps & Scaling (Kubernetes & IaC)
+**Goal:** Demonstrate production-grade infrastructure and orchestration.
+- [ ] **K8s Manifests:** Write `deployment.yaml` and `service.yaml` files for the API, Worker, and Redis.
+- [ ] **Local K8s:** Run the entire stack on your MacBook using **Kind** (Kubernetes-in-Docker) or **K3s**.
+- [ ] **Infrastructure as Code:** Write **Terraform** scripts to define an AWS VPC and an RDS instance to show cloud-readiness.
+- [ ] **Remote Access:** Install **Tailscale** to securely monitor your local "server" logs from your phone while at the beach.
+
+---
+
+## 🟣 Phase 6: Observability (The Final Polish)
+**Goal:** Monitor the health and performance of the entire system.
+- [ ] **Prometheus:** Export metrics (e.g., scrape success rates, task latency) from your Python code.
+- [ ] **Grafana Dashboard:** Build a visual dashboard showing wave height trends and system CPU/RAM usage.
+- [ ] **Alerting:** Set up a notification (Discord/Slack/Email) if the scraper fails or the Redis queue gets backed up.

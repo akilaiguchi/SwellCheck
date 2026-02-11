@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: openswell_db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: swellcheck
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./init_db:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  api:
+    build: ./api
+    container_name: openswell_api
+    restart: always
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./api:/app
+    env_file: .env
+    environment:
+      - DATABASE_URL=mysql+mysqlconnector://${DB_USER}:${DB_PASSWORD}@db/swellcheck
+
+  # scraper:
+  #   build: ./scraper
+  #   container_name: openswell_scraper
+  #   depends_on:
+  #     - api
+  #   env_file: .env
+  #   restart: always
+
+  # bot:
+  #   build: ./bot
+  #   container_name: openswell_bot
+  #   depends_on:
+  #     - api
+  #   env_file: .env
+  #   restart: always
+
+volumes:
+  mysql_data:
