@@ -1,9 +1,9 @@
 from fastapi import FastAPI, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
-from database import get_db, engine, Base
-from models import Buoy, Reading
-from schemas import (
+from shared.database import get_db, engine, Base
+from shared.models import Buoy, Reading
+from shared.schemas import (
     BuoyCreate,
     BuoyUpdate,
     Buoy as BuoySchema,
