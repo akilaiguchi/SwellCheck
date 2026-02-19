@@ -1,9 +1,7 @@
-version: '3.8'
-
 services:
   db:
     image: mysql:8.0
-    container_name: openswell_db
+    container_name: swellcheck_db
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
@@ -24,7 +22,7 @@ services:
 
   api:
     build: ./api
-    container_name: openswell_api
+    container_name: swellcheck_api
     restart: always
     depends_on:
       db:
@@ -33,25 +31,55 @@ services:
       - "8000:8000"
     volumes:
       - ./api:/app
+      - ./shared:/shared
     env_file: .env
     environment:
       - DATABASE_URL=mysql+mysqlconnector://${DB_USER}:${DB_PASSWORD}@db/swellcheck
+      - PYTHONPATH=/app:/
 
-  # scraper:
-  #   build: ./scraper
-  #   container_name: openswell_scraper
-  #   depends_on:
-  #     - api
-  #   env_file: .env
-  #   restart: always
+  scraper:
+    build: ./scraper
+    container_name: swellcheck_scraper
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./scraper:/app
+      - ./shared:/shared
+    env_file: .env
+    environment:
+      - DATABASE_URL=mysql+mysqlconnector://${DB_USER}:${DB_PASSWORD}@db/swellcheck
+      - REDIS_URL=redis://redis:6379/0
+      - PYTHONPATH=/app:/
+    restart: always
 
-  # bot:
-  #   build: ./bot
-  #   container_name: openswell_bot
-  #   depends_on:
-  #     - api
-  #   env_file: .env
-  #   restart: always
+  bot:
+    build: ./bot
+    container_name: swellcheck_bot
+    depends_on:
+      - api
+    volumes:
+      - ./bot:/app
+    env_file: .env
+    restart: always
+
+  redis:
+    image: redis:7-alpine
+    container_name: swellcheck_redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
 
 volumes:
   mysql_data:
+  redis_data:
