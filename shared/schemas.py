@@ -33,10 +33,15 @@ class ReadingBase(BaseModel):
     buoy_id: int
     timestamp: datetime
     wvht: float | None = None
-    dpd: float | None = None
+    swh: float | None = None
+    swp: float | None = None
+    wwh: float | None = None
+    wwp: float | None = None
+    swd: str | None = None
+    wwd: str | None = None
+    steepness: str | None = None
     apd: float | None = None
     mwd: int | None = None
-    wtmp: float | None = None
 
 
 class ReadingCreate(ReadingBase):
@@ -46,10 +51,15 @@ class ReadingCreate(ReadingBase):
 class ReadingUpdate(BaseModel):
     timestamp: datetime | None = None
     wvht: float | None = None
-    dpd: float | None = None
+    swh: float | None = None
+    swp: float | None = None
+    wwh: float | None = None
+    wwp: float | None = None
+    swd: str | None = None
+    wwd: str | None = None
+    steepness: str | None = None
     apd: float | None = None
     mwd: int | None = None
-    wtmp: float | None = None
 
 
 class Reading(ReadingBase):

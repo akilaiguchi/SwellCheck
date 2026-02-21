@@ -18,10 +18,15 @@ CREATE TABLE IF NOT EXISTS readings (
     buoy_id INT NOT NULL,
     timestamp DATETIME NOT NULL,
     wvht FLOAT,
-    dpd FLOAT,
+    swh FLOAT,
+    swp FLOAT,
+    wwh FLOAT,
+    wwp FLOAT,
+    swd VARCHAR(3),
+    wwd VARCHAR(3),
+    steepness VARCHAR(10),
     apd FLOAT,
     mwd SMALLINT,
-    wtmp FLOAT,
 
     -- link readings back to buoy directory
     -- if a buoy is deleted from 'buoys' table, its readings are also deleted
