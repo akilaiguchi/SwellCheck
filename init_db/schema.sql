@@ -33,9 +33,13 @@ CREATE TABLE IF NOT EXISTS readings (
     CONSTRAINT fk_buoy
         FOREIGN KEY (buoy_id)
         REFERENCES buoys(buoy_id)
-        ON DELETE CASCADE
+        ON DELETE CASCADE,
+    UNIQUE KEY uq_buoy_timestamp (buoy_id, timestamp)
 );
 
 -- Install initial data (add rows as needed)
 -- INSERT IGNORE INTO buoys (buoy_id, location_name, latitude, longitude)
 -- VALUES (12345, 'Scripps', 32.87, -117.26);
+INSERT IGNORE INTO buoys (buoy_id, location_name, latitude, longitude)
+VALUES (51205, 'Pauwela, Maui, HI', 21.018, -156.421);
+
