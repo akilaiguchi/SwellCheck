@@ -1,6 +1,6 @@
 # Creates the object relational mapping for mysql DB=
 
-from sqlalchemy import Column, Integer, String, Float, SmallInteger, DateTime, ForeignKey
+from sqlalchemy import Column, Integer, String, Float, SmallInteger, DateTime, ForeignKey, UniqueConstraint
 from sqlalchemy.orm import relationship
 from .database import Base
 
@@ -18,6 +18,7 @@ class Buoy(Base):
 
 class Reading(Base):
     __tablename__ = "readings"
+    __table_args__ = (UniqueConstraint("buoy_id", "timestamp", name="uq_buoy_timestamp"),)
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     buoy_id = Column(Integer, ForeignKey("buoys.buoy_id", ondelete="CASCADE"), nullable=False, index=True)
