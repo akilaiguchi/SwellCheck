@@ -63,6 +63,8 @@ services:
     volumes:
       - ./bot:/app
     env_file: .env
+    environment:
+      - API_BASE_URL=http://api:8000
     restart: always
 
   redis:

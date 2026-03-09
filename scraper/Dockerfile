@@ -28,4 +28,4 @@ COPY . .
 
 # 8. Run the scraper application
 # Note: Update this CMD based on your scraper's entry point file
-CMD ["python", "main.py"]
+CMD ["python", "scraper.py"]
